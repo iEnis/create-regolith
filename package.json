@@ -1,13 +1,39 @@
 {
-  "name": "create-regolith",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "type": "commonjs"
+    "name": "create-regolith",
+    "version": "1.0.0",
+    "type": "module",
+    "author": "iEnis",
+    "keywords": [
+        "Regolith",
+        "Minecraft",
+        "Minecraft-Bedrock",
+        "Development"
+    ],
+    "scripts": {
+        "build": "node build/bundle.js",
+        "watch": "node build/watch.js"
+    },
+    "bin": "app.js",
+    "files": [
+        "app.js",
+        "modules"
+    ],
+    "license": "MIT",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/iEnis/create-regolith.git"
+    },
+    "bugs": {
+        "url": "https://github.com/iEnis/create-regolith/issues"
+    },
+    "homepage": "https://github.com/iEnis/create-regolith#readme",
+    "devDependencies": {
+        "@clack/core": "^0.5.0",
+        "@types/node": "^24.3.0",
+        "@types/prompts": "^2.4.9",
+        "esbuild": "^0.25.9",
+        "typescript": "^5.9.2",
+        "yocto-spinner": "^1.0.0",
+        "zx": "^8.8.1"
+    }
 }
