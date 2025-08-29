@@ -33,6 +33,7 @@
         "@types/prompts": "^2.4.9",
         "esbuild": "^0.25.9",
         "typescript": "^5.9.2",
+        "uuid": "^11.1.0",
         "yocto-spinner": "^1.0.0",
         "zx": "^8.8.1"
     }

@@ -1,14 +1,15 @@
 export interface ConfirmOptions {
     message: string;
-    active: string;
-    inactive: string;
+    active?: string;
+    hint?: string;
+    inactive?: string;
     initialValue?: boolean;
 }
 
 export interface TextOptions {
     message: string;
     placeholder: string;
-    validate: (value: string) => string | undefined;
+    validate?: (value: string) => string | undefined;
     hint?: string;
 }
 

@@ -5,10 +5,8 @@
         "moduleResolution": "nodenext",
         "strict": true,
         "skipLibCheck": true,
-        "allowJs": false,
+        "allowJs": true,
         "rootDir": ".",
-        "paths": {
-            "@type/*": ["./types/*"]
-        }
+        "outDir": "../../BP/scripts/"
     }
 }

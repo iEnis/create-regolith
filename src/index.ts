@@ -1,5 +1,6 @@
 #!/usr/bin/env node
-import Wrapper, { $ } from "./Wrapper.js";
+import Wrapper from "./Wrapper.js";
+import install from "./cmd.js";
 
 process.on("SIGINT", () => {
     if (Wrapper.activeSpinner) Wrapper.spinnerError();
@@ -7,10 +8,23 @@ process.on("SIGINT", () => {
 
 Wrapper.intro("Create Regolith");
 
+const author = await Wrapper.text({
+    message: "What should the author name be?",
+    hint: "This can always be changed in the 'package.json' and 'config.json' later",
+    validate: (value) => (value.length === 0 ? "Author cannot be empty" : undefined),
+    placeholder: "Author Name",
+});
+
 const name = await Wrapper.text({
     message: "What should the Project name be?",
     validate: (value) => (value.length === 0 ? "Name cannot be empty" : undefined),
     placeholder: "Project Name",
+});
+
+const description = await Wrapper.text({
+    message: "What should the Add-On description be?",
+    hint: "This is optional and can always be changed in the 'package.json' and 'config.json' later",
+    placeholder: "Project Description",
 });
 
 const beta = await Wrapper.confirm({
@@ -18,6 +32,36 @@ const beta = await Wrapper.confirm({
     active: "Beta",
     inactive: "Stable",
     initialValue: false,
+});
+
+let prealpha = false;
+
+if (beta)
+    prealpha = await Wrapper.confirm({
+        message: "Would you like to the beta or alpha tagged version",
+        active: "Alpha",
+        inactive: "Beta",
+        initialValue: false,
+    });
+
+const nodeModules: { [key: string]: { beta: boolean; hint?: string } } = {
+    "@minecraft/server": { beta: false },
+    "@minecraft/server-ui": { beta: false },
+    "@minecraft/server-gametest": { beta: true },
+    "@minecraft/server-net": { beta: true, hint: "This only works on Servers" },
+    "@minecraft/server-admin": { beta: true, hint: "This only works on Realms and Servers" },
+};
+
+const modules = await Wrapper.multiselect({
+    message: "What modules would you like to install",
+    options: Object.keys(nodeModules)
+        .filter((x) => (beta ? true : nodeModules[x].beta === false))
+        .map((x) => {
+            const value: { value: string; hint?: string } = { value: x };
+            if (nodeModules[x]?.hint) value.hint = nodeModules[x].hint;
+            return value;
+        }),
+    required: true,
 });
 
 const utils = await Wrapper.multiselect({
@@ -29,9 +73,13 @@ const utils = await Wrapper.multiselect({
     ],
 });
 
+// await install({ author, name, description, beta, modules, prealpha, utils });
+
 await Wrapper.spinner("Timer set for 3s", async () => {
     await new Promise((r) => setTimeout(r, 3000));
     return true;
 });
 
 Wrapper.outro("Finished setting up Regolith Project");
+
+Wrapper.instructions();

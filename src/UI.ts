@@ -44,6 +44,9 @@ export const symbols = {
     multiselectUnselected: "◻",
     cancel: "■",
     error: "▲",
+    cross: "✗",
+    check: "✓︎",
+    info: "i",
 } as const;
 
 type symbolsList = keyof typeof symbols;

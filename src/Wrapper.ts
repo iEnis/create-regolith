@@ -3,27 +3,6 @@ import type { ConfirmOptions, TextOptions, MultiSelectOptions } from "./uiTypes.
 import { color, colorString, colorSymbol, displayUI } from "./UI.js";
 import { TextPrompt, ConfirmPrompt, isCancel, MultiSelectPrompt } from "@clack/core";
 import pc from "picocolors";
-import { createRequire } from "node:module";
-const require = createRequire(import.meta.url);
-const zx: typeof import("zx").$ = require("zx").$;
-
-export async function $(
-    cmd: string | TemplateStringsArray,
-    options?: { log?: boolean },
-    ...substitutions: any[]
-): Promise<string> {
-    zx.prefix = "";
-    zx.quote = (x) => pc.yellow(x);
-
-    let result;
-
-    if (typeof cmd === "string") result = await zx`${cmd}`;
-    else result = await zx(cmd, ...substitutions);
-
-    const stdout = result.stdout;
-    if (options?.log) console.log(stdout);
-    return stdout;
-}
 
 export default class Wrapper {
     protected constructor() {}
@@ -59,11 +38,29 @@ export default class Wrapper {
                     this.error,
                 );
             },
-            validate: (value) => options.validate(value),
+            validate: (value) => (!!options.validate ? options.validate(value) : undefined),
         });
         const value = await p.prompt();
         if (this.cancel(value)) this.exit();
         return value as string;
+    }
+
+    public static instructions() {
+        console.log(
+            [
+                "",
+                `${colorSymbol("topBar", "dim")}`,
+                `${colorSymbol("bar", "dim")}  ${color("red", "You need Regolith for this to work!")}`,
+                `${colorSymbol("bar", "dim")}  ${color("fg", "Run 'npm i' before going further")}`,
+                `${colorSymbol("bar", "dim")}`,
+                `${colorSymbol("bar", "dim")}  ${color("fg", "Commands:")}`,
+                `${colorSymbol("bar", "dim")}  ${color("fg", "'regolith run/watch' will bundle the project")}`,
+                `${colorSymbol("bar", "dim")}  ${color("fg", "'regolith run/watch build' will build the project")}`,
+                `${colorSymbol("bar", "dim")}  ${color("fg", "'regolith run/watch bundle' will bundle the project")}`,
+                `${colorSymbol("bottomBar", "dim")}`,
+                "",
+            ].join("\n"),
+        );
     }
 
     public static async multiselect(options: MultiSelectOptions<string>) {
@@ -100,17 +97,19 @@ export default class Wrapper {
         });
         const value = await p.prompt();
         if (this.cancel(value)) this.exit();
-        return value as string;
+        return value as unknown as string[];
     }
 
-    public static async spinner(message: string, callback: () => Promise<any>) {
+    public static async spinner(message: string, callback: () => Promise<boolean | string | undefined>) {
         console.log(colorSymbol("bar", "dim"));
         this.activeSpinner = { spinner: spinner({ color: colorString, text: color("fg", `  ${message}`) }), message };
         this.activeSpinner?.spinner.start();
-        let value: any = undefined;
+        let value: boolean | string | undefined = undefined;
         const stop = (success: boolean) =>
             `${colorSymbol(success ? "done" : "error", success ? "green" : "red")}  ${color("fg", message)}${
-                success ? `\n${colorSymbol("bar", "dim")}  ${color("dim", `${value}`)}` : ""
+                (success && typeof value === "string") || !success
+                    ? `\n${colorSymbol("bar", "dim")}  ${color("dim", `${value}`)}`
+                    : ""
             }`;
         try {
             value = await callback();
@@ -145,7 +144,7 @@ export default class Wrapper {
                 return displayUI(
                     this.state,
                     options.message,
-                    "Press ← → to change, Enter to submit",
+                    options.hint ?? "",
                     [`${yes} ${active} ${color("reset", "|")} ${no} ${inactive}`],
                     this.cursor === 0 ? active : inactive,
                 );
