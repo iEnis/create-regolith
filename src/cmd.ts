@@ -36,7 +36,7 @@ export default async function install(params: installParams) {
     }
 
     let modules: { module: string; version: string }[] = [];
-    Wrapper.spinner("Getting Latest '@minecraft/server' versions", async () => {
+    await Wrapper.spinner("Getting Latest '@minecraft/server' versions", async () => {
         for (const x of params.modules) {
             modules.push({
                 module: x,
@@ -46,7 +46,7 @@ export default async function install(params: installParams) {
         return true;
     });
 
-    Wrapper.spinner("Creating Directories", async () => {
+    await Wrapper.spinner("Creating Directories", async () => {
         mkdirSync(paths.exec("/.regolith/cache"), { recursive: true });
         mkdirSync(paths.exec("/.regolith/tmp"), { recursive: true });
         mkdirSync(paths.exec("/packs/BP/scripts"), { recursive: true });
@@ -54,7 +54,7 @@ export default async function install(params: installParams) {
         return true;
     });
 
-    Wrapper.spinner("Creating and Copying files", async () => {
+    await Wrapper.spinner("Creating and Copying files", async () => {
         copyFileSync(paths.node("/modules/dynamic.js"), paths.exec("/filters/dynamic/dynamic.js"));
         copyFileSync(paths.node("/modules/regolith.exe"), paths.exec("/regolith.exe"));
 
@@ -113,7 +113,7 @@ export default async function install(params: installParams) {
     });
 
     if (params.utils.includes("typescript"))
-        Wrapper.spinner("Adding Typescript", async () => {
+        await Wrapper.spinner("Adding Typescript", async () => {
             mkdirSync(paths.exec("/packs/data/src"), { recursive: true });
             writeFileSync(paths.exec("/packs/data/src/index.ts"), 'console.log("Test");');
             copyFileSync(paths.node("/modules/tsconfig.json"), paths.exec("/packs/data/src"));
@@ -121,7 +121,7 @@ export default async function install(params: installParams) {
         });
 
     if (params.utils.includes("esbuild"))
-        Wrapper.spinner("Adding esBuild", async () => {
+        await Wrapper.spinner("Adding esBuild", async () => {
             const ts = params.utils.includes("typescript");
             const NAMESPACE = params.utils.includes("typescript") ? "packs/data/src" : "packs/BP/scripts";
             const ENTRYPOINT = params.utils.includes("typescript")
