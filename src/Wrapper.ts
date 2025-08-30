@@ -52,7 +52,7 @@ export default class Wrapper {
             },
             validate: (value) => (!!options.validate ? options.validate(value) : undefined),
         });
-        const value = await p.prompt();
+        const value = await p.prompt() ?? "";
         if (this.cancel(value)) this.exit();
         return value as string;
     }

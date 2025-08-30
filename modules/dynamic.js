@@ -20,7 +20,7 @@ for (const pack of [BP, RP]) {
     if (isBP) {
         for (const [i, dep] of pack.dependencies.entries()) {
             if (!("module_name" in dep)) continue;
-            pack.dependencies[i] = packageJSON.devDependencies[dep].split("-")[0].replace("^", "");
+            pack.dependencies[i].version = packageJSON.devDependencies[dep.module_name].split("-")[0].replace("^", "");
         }
     }
 

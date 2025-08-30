@@ -32,6 +32,7 @@ export default async function install(params: installParams) {
             for (const profile of ["default", "build", "bundle"]) {
                 config.regolith.profiles[profile].filters.push({ filter: profile === "build" ? "build" : "bundle" });
             }
+            writeFileSync(paths.exec("config.json"), JSON.stringify(config));
         }
     }
 
@@ -47,9 +48,10 @@ export default async function install(params: installParams) {
     });
 
     await Wrapper.spinner("Creating Directories", async () => {
-        mkdirSync(paths.exec("/.regolith/cache"), { recursive: true });
+        mkdirSync(paths.exec("/.regolith/cache/venvs"), { recursive: true });
         mkdirSync(paths.exec("/.regolith/tmp"), { recursive: true });
         mkdirSync(paths.exec("/packs/BP/scripts"), { recursive: true });
+        mkdirSync(paths.exec("/packs/RP"), { recursive: true });
         mkdirSync(paths.exec("/filters/dynamic"), { recursive: true });
         return true;
     });
@@ -57,6 +59,7 @@ export default async function install(params: installParams) {
     await Wrapper.spinner("Creating and Copying files", async () => {
         copyFileSync(paths.node("/modules/dynamic.js"), paths.exec("/filters/dynamic/dynamic.js"));
         copyFileSync(paths.node("/modules/regolith.exe"), paths.exec("/regolith.exe"));
+        if (!params.modules.includes("esbuild")) cfg(false);
 
         const BP = JSON.parse(readFileSync(paths.node("/modules/BP.json")).toString());
         const RP = JSON.parse(readFileSync(paths.node("/modules/RP.json")).toString());
@@ -64,8 +67,9 @@ export default async function install(params: installParams) {
         const packageJSON = JSON.parse(readFileSync(paths.node("/modules/package.json")).toString());
         packageJSON.name = params.name.toLowerCase().replace(/\s+/g, "-");
         packageJSON.author = params.author;
+        packageJSON.version = "0.0.1";
         if (params.description.length > 0) packageJSON.description = params.description;
-
+        console.log("M1")
         const uuid = {
             bpHeader: v4(),
             data: v4(),
@@ -116,14 +120,15 @@ export default async function install(params: installParams) {
         await Wrapper.spinner("Adding Typescript", async () => {
             mkdirSync(paths.exec("/packs/data/src"), { recursive: true });
             writeFileSync(paths.exec("/packs/data/src/index.ts"), 'console.log("Test");');
-            copyFileSync(paths.node("/modules/tsconfig.json"), paths.exec("/packs/data/src"));
+            copyFileSync(paths.node("/modules/tsconfig.json"), paths.exec("/packs/data/src/tsconfig.json"));
             return true;
         });
 
     if (params.utils.includes("esbuild"))
         await Wrapper.spinner("Adding esBuild", async () => {
+            cfg(true);
             const ts = params.utils.includes("typescript");
-            const NAMESPACE = params.utils.includes("typescript") ? "packs/data/src" : "packs/BP/scripts";
+            const NAMESPACE = params.utils.includes("typescript") ? "../../packs/data/src" : "../../packs/BP/scripts";
             const ENTRYPOINT = params.utils.includes("typescript")
                 ? `/data/src/index.${ts ? "ts" : "js"}`
                 : `/BP/scripts/index.${ts ? "ts" : "js"}`;

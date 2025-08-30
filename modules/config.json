@@ -9,7 +9,7 @@
     "regolith": {
         "dataPath": "./packs/data",
         "filterDefinitions": {
-            "version": {
+            "dynamic": {
                 "runWith": "nodejs",
                 "script": "filters/dynamic/dynamic.js"
             }
@@ -24,7 +24,10 @@
                     "bpName": "project.name + ' - BP'",
                     "rpName": "project.name + ' - RP'"
                 },
-                "filters": [{ "filter": "dynamic", "arguments": ["increase"], "when": "mode != 'watch'" }]
+                "filters": [
+                    { "filter": "dynamic", "arguments": ["increase"], "when": "mode == 'build'" },
+                    { "filter": "dynamic", "when": "mode == 'watch'" }
+                ]
             },
             "build": {
                 "export": {
@@ -34,7 +37,10 @@
                     "bpName": "project.name + ' - BP'",
                     "rpName": "project.name + ' - RP'"
                 },
-                "filters": [{ "filter": "dynamic", "arguments": ["increase"], "when": "mode != 'watch'" }]
+                "filters": [
+                    { "filter": "dynamic", "arguments": ["increase"], "when": "mode == 'build'" },
+                    { "filter": "dynamic", "when": "mode == 'watch'" }
+                ]
             },
             "bundle": {
                 "export": {
@@ -44,7 +50,10 @@
                     "bpName": "project.name + ' - BP'",
                     "rpName": "project.name + ' - RP'"
                 },
-                "filters": [{ "filter": "dynamic", "arguments": ["increase"], "when": "mode != 'watch'" }]
+                "filters": [
+                    { "filter": "dynamic", "arguments": ["increase"], "when": "mode == 'build'" },
+                    { "filter": "dynamic", "when": "mode == 'watch'" }
+                ]
             }
         }
     }
