@@ -24,7 +24,7 @@ export default class Wrapper {
 
     private static exit(message = "Canceled!") {
         console.log(`${colorSymbol("bottomBar", "dim")}  ${color(["bgRed", "white"], ` ${message} `)}`);
-        process.exit(1);
+        process.exit();
     }
 
     public static intro = (text: string) => console.log(`${colorSymbol("topBar", "dim")}  ${color("bg", ` ${text} `)}`);

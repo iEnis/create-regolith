@@ -1,27 +1,9 @@
 import { copyFileSync, readFileSync, writeFileSync, mkdirSync } from "fs";
 import Wrapper from "./Wrapper.js";
 import paths from "./paths.js";
-import pc from "picocolors";
 import { v4 } from "uuid";
-import { createRequire } from "node:module";
-const require = createRequire(import.meta.url);
-const zx: typeof import("zx").$ = require("zx").$;
 
 const prealphaVersion = "3.0.0-alpha";
-
-async function $(cmd: string | TemplateStringsArray, options?: { log?: boolean }, ...substitutions: any[]): Promise<string> {
-    zx.prefix = "";
-    zx.quote = (x) => pc.yellow(x);
-
-    let result;
-
-    if (typeof cmd === "string") result = await zx`${cmd}`;
-    else result = await zx(cmd, ...substitutions);
-
-    const stdout = result.stdout;
-    if (options?.log) console.log(stdout);
-    return stdout;
-}
 
 type installParams = {
     author: string;
@@ -80,7 +62,7 @@ export default async function install(params: installParams) {
         const RP = JSON.parse(readFileSync(paths.node("/modules/RP.json")).toString());
 
         const packageJSON = JSON.parse(readFileSync(paths.node("/modules/package.json")).toString());
-        packageJSON.name = params.name;
+        packageJSON.name = params.name.toLowerCase().replace(/\s+/g, "-");
         packageJSON.author = params.author;
         if (params.description.length > 0) packageJSON.description = params.description;
 

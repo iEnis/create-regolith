@@ -17,7 +17,7 @@ const customRegolith = await Wrapper.confirm({
 
 if (!customRegolith) {
     Wrapper.outro("Declined installing Custom Regolith");
-    process.exit(0);
+    process.exit();
 }
 
 const author = await Wrapper.text({
