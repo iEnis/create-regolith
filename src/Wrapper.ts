@@ -1,12 +1,12 @@
-import spinner, { type Spinner } from "yocto-spinner";
+import { TextPrompt, ConfirmPrompt, isCancel, MultiSelectPrompt } from "@clack/core";
 import type { ConfirmOptions, TextOptions, MultiSelectOptions } from "./uiTypes.js";
 import { color, colorString, colorSymbol, displayUI } from "./UI.js";
-import { TextPrompt, ConfirmPrompt, isCancel, MultiSelectPrompt } from "@clack/core";
-import pc from "picocolors";
+import spinner, { type Spinner } from "yocto-spinner";
 
 export default class Wrapper {
     protected constructor() {}
     public static activeSpinner?: { spinner: Spinner; message: string };
+    public static run = Number(process.version.replace("v", "").split(".")[0]) >= 22 ? "node --run" : "npm run";
 
     private static cancel(value: any) {
         if (isCancel(value) || typeof value === "symbol") return true;
@@ -50,13 +50,14 @@ export default class Wrapper {
             [
                 "",
                 `${colorSymbol("topBar", "dim")}`,
-                `${colorSymbol("bar", "dim")}  ${color("red", "You need Regolith for this to work!")}`,
+                // `${colorSymbol("bar", "dim")}  ${color("red", "You need Regolith for this to work!")}`,
+                `${colorSymbol("bar", "dim")}  ${color("red", "Use the given Regolith executable for this to work!")}`,
                 `${colorSymbol("bar", "dim")}  ${color("fg", "Run 'npm i' before going further")}`,
                 `${colorSymbol("bar", "dim")}`,
                 `${colorSymbol("bar", "dim")}  ${color("fg", "Commands:")}`,
-                `${colorSymbol("bar", "dim")}  ${color("fg", "'regolith run/watch' will bundle the project")}`,
-                `${colorSymbol("bar", "dim")}  ${color("fg", "'regolith run/watch build' will build the project")}`,
-                `${colorSymbol("bar", "dim")}  ${color("fg", "'regolith run/watch bundle' will bundle the project")}`,
+                `${colorSymbol("bar", "dim")}  ${color("fg", "'./regolith.exe run/watch' will bundle the project")}`,
+                `${colorSymbol("bar", "dim")}  ${color("fg", `'./regolith.exe run/watch build' will build the project`)}`,
+                `${colorSymbol("bar", "dim")}  ${color("fg", `'./regolith.exe run/watch bundle' will bundle the project`)}`,
                 `${colorSymbol("bottomBar", "dim")}`,
                 "",
             ].join("\n"),

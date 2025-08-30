@@ -8,6 +8,17 @@ process.on("SIGINT", () => {
 
 Wrapper.intro("Create Regolith");
 
+const customRegolith = await Wrapper.confirm({
+    message: "Would you like to use my custom regolith build",
+    hint: "Unfortunately this is required",
+    initialValue: false,
+});
+
+if (!customRegolith) {
+    Wrapper.outro("Declined installing Custom Regolith");
+    process.exit(0);
+}
+
 const author = await Wrapper.text({
     message: "What should the author name be?",
     hint: "This can always be changed in the 'package.json' and 'config.json' later",
@@ -23,7 +34,7 @@ const name = await Wrapper.text({
 
 const description = await Wrapper.text({
     message: "What should the Add-On description be?",
-    hint: "This is optional and can always be changed in the 'package.json' and 'config.json' later",
+    hint: "[Optional] Can be changed in the 'package.json' & 'config.json' later",
     placeholder: "Project Description",
 });
 

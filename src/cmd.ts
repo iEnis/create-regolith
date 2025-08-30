@@ -81,6 +81,9 @@ export default async function install(params: installParams) {
         const packageJSON = JSON.parse(readFileSync(paths.node("/modules/package.json")).toString());
         packageJSON.name = params.name;
         packageJSON.author = params.author;
+        packageJSON.scripts["build"] = '".\\regolith.exe" run build';
+        packageJSON.scripts["bundle"] = '".\\regolith.exe" run';
+        packageJSON.scripts["watch"] = '".\\regolith.exe" watch';
         if (params.description.length > 0) packageJSON.description = params.description;
 
         const uuid = {

@@ -1,5 +1,5 @@
-import pc from "picocolors";
 import type { State } from "@clack/core";
+import pc from "picocolors";
 
 export const colorString = "magenta";
 const colorMap = {
@@ -82,7 +82,7 @@ export function displayUI(
     };
     const display = [
         colorSymbol("bar", "dim"),
-        `${colorSymbol(data.symbol, data.color)}  ${color("fg", message)}  ${state === "initial" ? color("dim", hint) : ""}`,
+        `${colorSymbol(data.symbol, data.color)}  ${color("fg", message)}  ${color("dim", hint)}`,
         state === "cancel"
             ? colorSymbol("bar", "dim")
             : state === "submit"

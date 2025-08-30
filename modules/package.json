@@ -2,5 +2,6 @@
     "name": "null",
     "version": "null",
     "type": "module",
+    "scripts": {},
     "devDependencies": {}
 }
