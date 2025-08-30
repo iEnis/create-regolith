@@ -69,7 +69,7 @@ export default async function install(params: installParams) {
         packageJSON.author = params.author;
         packageJSON.version = "0.0.1";
         if (params.description.length > 0) packageJSON.description = params.description;
-        console.log("M1")
+
         const uuid = {
             bpHeader: v4(),
             data: v4(),
