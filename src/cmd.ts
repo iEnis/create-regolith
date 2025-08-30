@@ -74,6 +74,7 @@ export default async function install(params: installParams) {
 
     Wrapper.spinner("Creating and Copying files", async () => {
         copyFileSync(paths.node("/modules/dynamic.js"), paths.exec("/filters/dynamic/dynamic.js"));
+        copyFileSync(paths.node("/modules/regolith.exe"), paths.exec("/regolith.exe"));
 
         const BP = JSON.parse(readFileSync(paths.node("/modules/BP.json")).toString());
         const RP = JSON.parse(readFileSync(paths.node("/modules/RP.json")).toString());
@@ -81,9 +82,6 @@ export default async function install(params: installParams) {
         const packageJSON = JSON.parse(readFileSync(paths.node("/modules/package.json")).toString());
         packageJSON.name = params.name;
         packageJSON.author = params.author;
-        packageJSON.scripts["build"] = '".\\regolith.exe" run build';
-        packageJSON.scripts["bundle"] = '".\\regolith.exe" run';
-        packageJSON.scripts["watch"] = '".\\regolith.exe" watch';
         if (params.description.length > 0) packageJSON.description = params.description;
 
         const uuid = {

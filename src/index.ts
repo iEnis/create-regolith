@@ -1,16 +1,17 @@
 #!/usr/bin/env node
 import Wrapper from "./Wrapper.js";
 import install from "./cmd.js";
-
+console.clear();
 process.on("SIGINT", () => {
     if (Wrapper.activeSpinner) Wrapper.spinnerError();
 });
 
 Wrapper.intro("Create Regolith");
 
+Wrapper.info();
 const customRegolith = await Wrapper.confirm({
     message: "Would you like to use my custom regolith build",
-    hint: "Unfortunately this is required",
+    hint: "See the message above for further information",
     initialValue: false,
 });
 
@@ -84,7 +85,7 @@ const utils = await Wrapper.multiselect({
     ],
 });
 
-// await install({ author, name, description, beta, modules, prealpha, utils });
+await install({ author, name, description, beta, modules, prealpha, utils });
 
 await Wrapper.spinner("Timer set for 3s", async () => {
     await new Promise((r) => setTimeout(r, 3000));

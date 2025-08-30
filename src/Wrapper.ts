@@ -6,7 +6,16 @@ import spinner, { type Spinner } from "yocto-spinner";
 export default class Wrapper {
     protected constructor() {}
     public static activeSpinner?: { spinner: Spinner; message: string };
-    public static run = Number(process.version.replace("v", "").split(".")[0]) >= 22 ? "node --run" : "npm run";
+
+    public static info() {
+        console.log(
+            [
+                colorSymbol("bar", "dim"),
+                `${colorSymbol("error", "yellow")}  ${color("fg", "This project requires unreleased features")}`,
+                `${colorSymbol("bar", "dim")}  ${color("dim", "https://github.com/Bedrock-OSS/regolith/pull/331")}`,
+            ].join("\n"),
+        );
+    }
 
     private static cancel(value: any) {
         if (isCancel(value) || typeof value === "symbol") return true;
