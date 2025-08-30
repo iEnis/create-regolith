@@ -1,3 +1,5 @@
+/.regolith
 /node_modules
 package-lock.json
-modules/install.bat
+
+regolith.exe

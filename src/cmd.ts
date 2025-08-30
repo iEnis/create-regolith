@@ -1,7 +1,23 @@
-import { copyFileSync, readFileSync, writeFileSync, mkdirSync } from "fs";
+import { copyFileSync, readFileSync, writeFileSync, mkdirSync, readdirSync, existsSync } from "fs";
+import { exec } from "child_process";
 import Wrapper from "./Wrapper.js";
 import paths from "./paths.js";
 import { v4 } from "uuid";
+
+const $ = (cmd: string) =>
+    new Promise((r) =>
+        exec(cmd, { cwd: paths.exec(), shell: "cmd.exe", env: { ...process.env, NODE_PATH: "" } }, () => {}).on("close", r),
+    );
+
+const npmPATH = process.env.PATH?.split(";")
+    .find((x) => {
+        if (!x.includes("npm")) return;
+        const splitted = x.split("\\");
+        const str = splitted[splitted.length - 1];
+        if (str !== "npm") return;
+        return x;
+    })
+    ?.concat("\\npm");
 
 const prealphaVersion = "3.0.0-alpha";
 
@@ -16,6 +32,12 @@ type installParams = {
 };
 
 export default async function install(params: installParams) {
+    const utils = {
+        "typesafe-mc": params.utils.includes("typesafe-mc"),
+        typescript: params.utils.includes("typescript"),
+        esbuild: params.utils.includes("esbuild"),
+    };
+
     function cfg(esbuild: boolean) {
         const config = JSON.parse(readFileSync(paths.node("/modules/config.json")).toString());
         config.name = params.name;
@@ -53,13 +75,15 @@ export default async function install(params: installParams) {
         mkdirSync(paths.exec("/packs/BP/scripts"), { recursive: true });
         mkdirSync(paths.exec("/packs/RP"), { recursive: true });
         mkdirSync(paths.exec("/filters/dynamic"), { recursive: true });
+        if (utils["typesafe-mc"]) mkdirSync(paths.exec("/utils/"), { recursive: true });
         return true;
     });
 
     await Wrapper.spinner("Creating and Copying files", async () => {
         copyFileSync(paths.node("/modules/dynamic.js"), paths.exec("/filters/dynamic/dynamic.js"));
         copyFileSync(paths.node("/modules/regolith.exe"), paths.exec("/regolith.exe"));
-        if (!params.modules.includes("esbuild")) cfg(false);
+        copyFileSync(paths.node("/modules/.gitignoreFile"), paths.exec("/.gitignore"));
+        if (!utils["esbuild"]) cfg(false);
 
         const BP = JSON.parse(readFileSync(paths.node("/modules/BP.json")).toString());
         const RP = JSON.parse(readFileSync(paths.node("/modules/RP.json")).toString());
@@ -67,7 +91,7 @@ export default async function install(params: installParams) {
         const packageJSON = JSON.parse(readFileSync(paths.node("/modules/package.json")).toString());
         packageJSON.name = params.name.toLowerCase().replace(/\s+/g, "-");
         packageJSON.author = params.author;
-        packageJSON.version = "0.0.1";
+        if (utils["typesafe-mc"]) packageJSON.version = "0.0.1";
         if (params.description.length > 0) packageJSON.description = params.description;
 
         const uuid = {
@@ -87,11 +111,15 @@ export default async function install(params: installParams) {
         RP.modules[0].uuid = uuid.resources;
         RP.dependencies[0].uuid = uuid.bpHeader;
 
-        if (params.utils.includes("typescript")) {
+        if (utils["typescript"]) {
             packageJSON.devDependencies.typescript = "latest";
             packageJSON.devDependencies["@types/node"] = "latest";
         }
-        if (params.utils.includes("esbuild")) {
+        if (utils["typesafe-mc"]) {
+            packageJSON.devDependencies["typesafe-mc"] = "latest";
+            packageJSON.scripts["tsmc"] = "node node_modules/typesafe-mc/scripts/index.js";
+        }
+        if (utils["esbuild"]) {
             packageJSON.devDependencies.esbuild = "^0.25.9";
             packageJSON.devDependencies.globby = "^14.1.0";
         }
@@ -116,7 +144,13 @@ export default async function install(params: installParams) {
         return true;
     });
 
-    if (params.utils.includes("typescript"))
+    await Wrapper.spinner("Installing node_modules", async () => {
+        writeFileSync(paths.node("/modules/install.bat"), `@echo off\ncd "${paths.exec()}"\n"${npmPATH}" i`);
+        await $(paths.node("/modules/install.bat"));
+        return true;
+    });
+
+    if (utils["typescript"])
         await Wrapper.spinner("Adding Typescript", async () => {
             mkdirSync(paths.exec("/packs/data/src"), { recursive: true });
             writeFileSync(paths.exec("/packs/data/src/index.ts"), 'console.log("Test");');
@@ -124,12 +158,12 @@ export default async function install(params: installParams) {
             return true;
         });
 
-    if (params.utils.includes("esbuild"))
+    if (utils["esbuild"])
         await Wrapper.spinner("Adding esBuild", async () => {
             cfg(true);
-            const ts = params.utils.includes("typescript");
-            const NAMESPACE = params.utils.includes("typescript") ? "../../packs/data/src" : "../../packs/BP/scripts";
-            const ENTRYPOINT = params.utils.includes("typescript")
+            const ts = utils["typescript"];
+            const NAMESPACE = utils["typescript"] ? "../../packs/data/src" : "../../packs/BP/scripts";
+            const ENTRYPOINT = utils["typescript"]
                 ? `/data/src/index.${ts ? "ts" : "js"}`
                 : `/BP/scripts/index.${ts ? "ts" : "js"}`;
 
@@ -144,6 +178,15 @@ export default async function install(params: installParams) {
             );
             copyFileSync(paths.node("/modules/shared.js"), paths.exec("/filters/build/shared.js"));
 
+            return true;
+        });
+
+    if (utils["typesafe-mc"])
+        await Wrapper.spinner("Adding Typesafe-MC", async () => {
+            const tsmc: (targetPath: string) => void = (
+                await import("file:\\\\" + paths.exec("node_modules/typesafe-mc/scripts/cmd.js"))
+            ).default;
+            tsmc(paths.exec(""));
             return true;
         });
 }
@@ -165,4 +208,8 @@ async function getLatestVersion(module: string, type: "beta" | "stable") {
 
 function getMaxVersion(versions: string[][]) {
     return versions.sort((a, b) => a[1].localeCompare(b[1], undefined, { numeric: true })).pop() as [string, string];
+}
+
+export function checkEmpty() {
+    return !(readdirSync(paths.exec()).length > 0);
 }

@@ -2,7 +2,6 @@ import { TextPrompt, ConfirmPrompt, isCancel, MultiSelectPrompt } from "@clack/c
 import type { ConfirmOptions, TextOptions, MultiSelectOptions } from "./uiTypes.js";
 import { color, colorString, colorSymbol, displayUI } from "./UI.js";
 import spinner, { type Spinner } from "yocto-spinner";
-import type { Instructions } from "./generalTypes.js";
 import { readFileSync } from "fs";
 import paths from "./paths.js";
 
@@ -10,6 +9,17 @@ export default class Wrapper {
     protected constructor() {}
     public static activeSpinner?: { spinner: Spinner; message: string };
     public static version = JSON.parse(readFileSync(paths.node("package.json")).toString()).version;
+
+    public static notEmpty() {
+        console.log(
+            [
+                colorSymbol("topBar", "dim"),
+                `${colorSymbol("cancel", "red")}  ${color("red", "The directory you're in is not empty")}`,
+                colorSymbol("bottomBar", "dim"),
+            ].join("\n"),
+        );
+        process.exit();
+    }
 
     public static info() {
         console.log(
@@ -58,20 +68,18 @@ export default class Wrapper {
         return value as string;
     }
 
-    public static instructions(params: Instructions) {
-        const tsmc = `\n${colorSymbol("bar", "dim")}  ${color("fg", "Run 'npx typesafe-mc@latest' after to get Typesafe-MC")}`;
+    public static instructions() {
         console.log(
             [
                 "",
                 `${colorSymbol("topBar", "dim")}`,
                 // `${colorSymbol("bar", "dim")}  ${color("red", "You need Regolith for this to work!")}`,
                 `${colorSymbol("bar", "dim")}  ${color("red", "Use the given Regolith executable for this to work!")}`,
-                `${colorSymbol("bar", "dim")}  ${color("fg", "Run 'npm i' before going further")}${params.typesafeMC ? tsmc : ""}`,
                 `${colorSymbol("bar", "dim")}`,
                 `${colorSymbol("bar", "dim")}  ${color("fg", "Commands:")}`,
-                `${colorSymbol("bar", "dim")}  ${color("fg", "'./regolith.exe run/watch' will bundle the project")}`,
-                `${colorSymbol("bar", "dim")}  ${color("fg", `'./regolith.exe run/watch build' will build the project`)}`,
-                `${colorSymbol("bar", "dim")}  ${color("fg", `'./regolith.exe run/watch bundle' will bundle the project`)}`,
+                `${colorSymbol("bar", "dim")}  ${color("fg", `'"./regolith.exe" run/watch' will bundle the project`)}`,
+                `${colorSymbol("bar", "dim")}  ${color("fg", `'"./regolith.exe" run/watch build' will build the project`)}`,
+                `${colorSymbol("bar", "dim")}  ${color("fg", `'"./regolith.exe" run/watch bundle' will bundle the project`)}`,
                 `${colorSymbol("bottomBar", "dim")}`,
                 "",
             ].join("\n"),

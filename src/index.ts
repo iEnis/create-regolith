@@ -1,10 +1,12 @@
 #!/usr/bin/env node
 import Wrapper from "./Wrapper.js";
-import install from "./cmd.js";
+import install, { checkEmpty } from "./cmd.js";
 console.clear();
 process.on("SIGINT", () => {
     if (Wrapper.activeSpinner) Wrapper.spinnerError();
 });
+
+if (!checkEmpty()) Wrapper.notEmpty();
 
 Wrapper.intro(`Create Regolith v${Wrapper.version}`);
 
@@ -76,17 +78,21 @@ const modules = await Wrapper.multiselect({
     required: true,
 });
 
+const utilList: { value: string; label?: string; hint?: string }[] = [
+    { value: "typescript", label: "Typescript" },
+    { value: "esbuild", label: "esBuild" },
+];
+
+if (modules.includes("@minecraft/server-ui"))
+    utilList.push({ value: "typesafe-mc", label: "Typesafe-MC", hint: "Recommended" });
+
 const utils = await Wrapper.multiselect({
     message: "Select your utilities",
-    options: [
-        { value: "typesafe-mc", label: "Typesafe-MC", hint: "Recommended" },
-        { value: "typescript", label: "Typescript" },
-        { value: "esbuild", label: "esBuild" },
-    ],
+    options: utilList,
 });
 
 await install({ author, name, description, beta, modules, prealpha, utils });
 
 Wrapper.outro("Finished setting up Regolith Project");
 
-Wrapper.instructions({typesafeMC: utils.includes("typesafe-mc")});
+Wrapper.instructions();
