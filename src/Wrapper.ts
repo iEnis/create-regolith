@@ -2,10 +2,13 @@ import { TextPrompt, ConfirmPrompt, isCancel, MultiSelectPrompt } from "@clack/c
 import type { ConfirmOptions, TextOptions, MultiSelectOptions } from "./uiTypes.js";
 import { color, colorString, colorSymbol, displayUI } from "./UI.js";
 import spinner, { type Spinner } from "yocto-spinner";
+import { readFileSync } from "fs";
+import paths from "./paths.js";
 
 export default class Wrapper {
     protected constructor() {}
     public static activeSpinner?: { spinner: Spinner; message: string };
+    public static version = JSON.parse(readFileSync(paths.node("package.json")).toString()).version;
 
     public static info() {
         console.log(

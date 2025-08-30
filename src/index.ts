@@ -6,7 +6,7 @@ process.on("SIGINT", () => {
     if (Wrapper.activeSpinner) Wrapper.spinnerError();
 });
 
-Wrapper.intro("Create Regolith");
+Wrapper.intro(`Create Regolith v${Wrapper.version}`);
 
 Wrapper.info();
 const customRegolith = await Wrapper.confirm({
