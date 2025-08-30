@@ -87,11 +87,6 @@ const utils = await Wrapper.multiselect({
 
 await install({ author, name, description, beta, modules, prealpha, utils });
 
-await Wrapper.spinner("Timer set for 3s", async () => {
-    await new Promise((r) => setTimeout(r, 3000));
-    return true;
-});
-
 Wrapper.outro("Finished setting up Regolith Project");
 
 Wrapper.instructions();
