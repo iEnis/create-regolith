@@ -2,6 +2,7 @@ import { TextPrompt, ConfirmPrompt, isCancel, MultiSelectPrompt } from "@clack/c
 import type { ConfirmOptions, TextOptions, MultiSelectOptions } from "./uiTypes.js";
 import { color, colorString, colorSymbol, displayUI } from "./UI.js";
 import spinner, { type Spinner } from "yocto-spinner";
+import type { Instructions } from "./generalTypes.js";
 import { readFileSync } from "fs";
 import paths from "./paths.js";
 
@@ -57,14 +58,15 @@ export default class Wrapper {
         return value as string;
     }
 
-    public static instructions() {
+    public static instructions(params: Instructions) {
+        const tsmc = `\n${colorSymbol("bar", "dim")}  ${color("fg", "Run 'npx typesafe-mc@latest' after to get Typesafe-MC")}`;
         console.log(
             [
                 "",
                 `${colorSymbol("topBar", "dim")}`,
                 // `${colorSymbol("bar", "dim")}  ${color("red", "You need Regolith for this to work!")}`,
                 `${colorSymbol("bar", "dim")}  ${color("red", "Use the given Regolith executable for this to work!")}`,
-                `${colorSymbol("bar", "dim")}  ${color("fg", "Run 'npm i' before going further")}`,
+                `${colorSymbol("bar", "dim")}  ${color("fg", "Run 'npm i' before going further")}${params.typesafeMC ? tsmc : ""}`,
                 `${colorSymbol("bar", "dim")}`,
                 `${colorSymbol("bar", "dim")}  ${color("fg", "Commands:")}`,
                 `${colorSymbol("bar", "dim")}  ${color("fg", "'./regolith.exe run/watch' will bundle the project")}`,
