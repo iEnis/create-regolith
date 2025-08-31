@@ -63,27 +63,33 @@ export default class Wrapper {
             },
             validate: (value) => (!!options.validate ? options.validate(value) : undefined),
         });
-        const value = await p.prompt() ?? "";
+        const value = (await p.prompt()) ?? "";
         if (this.cancel(value)) this.exit();
         return value as string;
     }
 
-    public static instructions() {
-        console.log(
-            [
-                "",
-                `${colorSymbol("topBar", "dim")}`,
-                // `${colorSymbol("bar", "dim")}  ${color("red", "You need Regolith for this to work!")}`,
-                `${colorSymbol("bar", "dim")}  ${color("red", "Use the given Regolith executable for this to work!")}`,
-                `${colorSymbol("bar", "dim")}`,
-                `${colorSymbol("bar", "dim")}  ${color("fg", "Commands:")}`,
-                `${colorSymbol("bar", "dim")}  ${color("fg", `'"./regolith.exe" run/watch' will bundle the project`)}`,
-                `${colorSymbol("bar", "dim")}  ${color("fg", `'"./regolith.exe" run/watch build' will build the project`)}`,
-                `${colorSymbol("bar", "dim")}  ${color("fg", `'"./regolith.exe" run/watch bundle' will bundle the project`)}`,
-                `${colorSymbol("bottomBar", "dim")}`,
-                "",
-            ].join("\n"),
-        );
+    public static instructions(utils: string[]) {
+        const msg: string[] = [];
+        const add = (value: string) => msg.push(value);
+        add("");
+        add(`${colorSymbol("topBar", "dim")}`);
+        // add(`${colorSymbol("bar", "dim")}  ${color("red", "You need Regolith for this to work!")}`);
+        add(`${colorSymbol("bar", "dim")}  ${color("red", "Use the given Regolith executable for this to work!")}`);
+        add(`${colorSymbol("bar", "dim")}`);
+        add(`${colorSymbol("bar", "dim")}  ${color("fg", "Commands:")}`);
+        add(`${colorSymbol("bar", "dim")}  ${color("fg", `'"./regolith.exe" run/watch' will bundle the project`)}`);
+        if (utils.includes("esbuild")) {
+            add(`${colorSymbol("bar", "dim")}  ${color("fg", `'"./regolith.exe" run/watch build' will build the project`)}`);
+            add(
+                `${colorSymbol("bar", "dim")}  ${color(
+                    "fg",
+                    `'"./regolith.exe" run/watch bundle' will bundle the project`,
+                )}`,
+            );
+        }
+        add(`${colorSymbol("bottomBar", "dim")}`);
+        add("");
+        console.log(msg.join("\n"));
     }
 
     public static async multiselect(options: MultiSelectOptions<string>) {

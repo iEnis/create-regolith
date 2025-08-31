@@ -38,11 +38,37 @@ export default async function install(params: installParams) {
         esbuild: params.utils.includes("esbuild"),
     };
 
-    function cfg(esbuild: boolean) {
+    function cfg() {
         const config = JSON.parse(readFileSync(paths.node("/modules/config.json")).toString());
         config.name = params.name;
         config.author = params.author;
-        if (esbuild) {
+        if (utils.esbuild) {
+            config.regolith.profiles.build = {
+                export: {
+                    build: "standard",
+                    readOnly: false,
+                    target: "development",
+                    bpName: "project.name + ' - BP'",
+                    rpName: "project.name + ' - RP'",
+                },
+                filters: [
+                    { filter: "dynamic", arguments: ["increase"], when: "mode == 'build'" },
+                    { filter: "dynamic", when: "mode == 'watch'" },
+                ],
+            };
+            config.regolith.profiles.bundle = {
+                export: {
+                    build: "standard",
+                    readOnly: false,
+                    target: "development",
+                    bpName: "project.name + ' - BP'",
+                    rpName: "project.name + ' - RP'",
+                },
+                filters: [
+                    { filter: "dynamic", arguments: ["increase"], when: "mode == 'build'" },
+                    { filter: "dynamic", when: "mode == 'watch'" },
+                ],
+            };
             config.regolith.filterDefinitions.build = {
                 runWith: "nodejs",
                 script: "filters/build/build.js",
@@ -54,8 +80,16 @@ export default async function install(params: installParams) {
             for (const profile of ["default", "build", "bundle"]) {
                 config.regolith.profiles[profile].filters.push({ filter: profile === "build" ? "build" : "bundle" });
             }
-            writeFileSync(paths.exec("config.json"), JSON.stringify(config));
+        } else if (utils.typescript) {
+            config.regolith.filterDefinitions.build = {
+                runWith: "nodejs",
+                script: "filters/build/tsconfig.js",
+            };
+            config.regolith.profiles.default.filters.push({
+                filter: "build",
+            });
         }
+        writeFileSync(paths.exec("config.json"), JSON.stringify(config));
     }
 
     let modules: { module: string; version: string }[] = [];
@@ -73,6 +107,7 @@ export default async function install(params: installParams) {
         mkdirSync(paths.exec("/.regolith/cache/venvs"), { recursive: true });
         mkdirSync(paths.exec("/.regolith/tmp"), { recursive: true });
         mkdirSync(paths.exec("/packs/BP/scripts"), { recursive: true });
+        mkdirSync(paths.exec("/packs/data"), { recursive: true });
         mkdirSync(paths.exec("/packs/RP"), { recursive: true });
         mkdirSync(paths.exec("/filters/dynamic"), { recursive: true });
         if (utils["typesafe-mc"]) mkdirSync(paths.exec("/utils/"), { recursive: true });
@@ -83,7 +118,7 @@ export default async function install(params: installParams) {
         copyFileSync(paths.node("/modules/dynamic.js"), paths.exec("/filters/dynamic/dynamic.js"));
         copyFileSync(paths.node("/modules/regolith.exe"), paths.exec("/regolith.exe"));
         copyFileSync(paths.node("/modules/.gitignoreFile"), paths.exec("/.gitignore"));
-        if (!utils["esbuild"]) cfg(false);
+        if (!utils["esbuild"]) cfg();
 
         const BP = JSON.parse(readFileSync(paths.node("/modules/BP.json")).toString());
         const RP = JSON.parse(readFileSync(paths.node("/modules/RP.json")).toString());
@@ -91,7 +126,7 @@ export default async function install(params: installParams) {
         const packageJSON = JSON.parse(readFileSync(paths.node("/modules/package.json")).toString());
         packageJSON.name = params.name.toLowerCase().replace(/\s+/g, "-");
         packageJSON.author = params.author;
-        if (utils["typesafe-mc"]) packageJSON.version = "0.0.1";
+        packageJSON.version = "0.0.1";
         if (params.description.length > 0) packageJSON.description = params.description;
 
         const uuid = {
@@ -153,19 +188,21 @@ export default async function install(params: installParams) {
     if (utils["typescript"])
         await Wrapper.spinner("Adding Typescript", async () => {
             mkdirSync(paths.exec("/packs/data/src"), { recursive: true });
-            writeFileSync(paths.exec("/packs/data/src/index.ts"), 'console.log("Test");');
+            writeFileSync(paths.exec("/packs/data/src/index.ts"), 'console.log("Hello World!");');
             copyFileSync(paths.node("/modules/tsconfig.json"), paths.exec("/packs/data/src/tsconfig.json"));
             return true;
         });
+    else if (utils.esbuild) {
+        mkdirSync(paths.exec("/packs/data/src"), { recursive: true });
+        writeFileSync(paths.exec("/packs/data/src/index.js"), 'console.log("Hello World!");');
+    } else writeFileSync(paths.exec("/packs/BP/scripts/index.js"), 'console.log("Hello World!");');
 
     if (utils["esbuild"])
         await Wrapper.spinner("Adding esBuild", async () => {
-            cfg(true);
+            cfg();
             const ts = utils["typescript"];
-            const NAMESPACE = utils["typescript"] ? "../../packs/data/src" : "../../packs/BP/scripts";
-            const ENTRYPOINT = utils["typescript"]
-                ? `/data/src/index.${ts ? "ts" : "js"}`
-                : `/BP/scripts/index.${ts ? "ts" : "js"}`;
+            const NAMESPACE = "../../packs/data/src";
+            const ENTRYPOINT = `data/src/index.${ts ? "ts" : "js"}`;
 
             mkdirSync(paths.exec("/filters/build"), { recursive: true });
             writeFileSync(
@@ -180,6 +217,11 @@ export default async function install(params: installParams) {
 
             return true;
         });
+    else if (utils.typescript) {
+        mkdirSync(paths.exec("filters/build"), { recursive: true });
+        copyFileSync(paths.node("/modules/build.bat"), paths.exec("filters/build/build.bat"));
+        copyFileSync(paths.node("/modules/tsconfig.js"), paths.exec("filters/build/tsconfig.js"));
+    }
 
     if (utils["typesafe-mc"])
         await Wrapper.spinner("Adding Typesafe-MC", async () => {

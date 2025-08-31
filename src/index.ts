@@ -95,4 +95,4 @@ await install({ author, name, description, beta, modules, prealpha, utils });
 
 Wrapper.outro("Finished setting up Regolith Project");
 
-Wrapper.instructions();
+Wrapper.instructions(utils);
