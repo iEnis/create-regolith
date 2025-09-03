@@ -6,6 +6,23 @@ process.on("SIGINT", () => {
     if (Wrapper.activeSpinner) Wrapper.spinnerError();
 });
 
+await install({
+    author: "iEnis",
+    name: "My Project",
+    description: "",
+    beta: true,
+    modules: ["@minecraft/server", "@minecraft/server-ui"],
+    prealpha: false,
+    utils: [
+        "typescript",
+        "esbuild",
+        "gens",
+        "typesafe-mc"
+    ],
+});
+
+process.exit(0);
+
 if (!checkEmpty()) Wrapper.notEmpty();
 
 Wrapper.intro(`Create Regolith v${Wrapper.version}`);
@@ -81,6 +98,7 @@ const modules = await Wrapper.multiselect({
 const utilList: { value: string; label?: string; hint?: string }[] = [
     { value: "typescript", label: "Typescript" },
     { value: "esbuild", label: "esBuild" },
+    { value: "gens", label: "Texture Generator" },
 ];
 
 if (modules.includes("@minecraft/server-ui"))

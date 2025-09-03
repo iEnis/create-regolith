@@ -36,12 +36,26 @@ export default async function install(params: installParams) {
         "typesafe-mc": params.utils.includes("typesafe-mc"),
         typescript: params.utils.includes("typescript"),
         esbuild: params.utils.includes("esbuild"),
+        gens: params.utils.includes("gens"),
     };
 
     function cfg() {
-        const config = JSON.parse(readFileSync(paths.node("/modules/config.json")).toString());
+        const config = JSON.parse(readFileSync(paths.node("/modules/global/config.json")).toString());
         config.name = params.name;
         config.author = params.author;
+        function addGens(profile: string) {
+            config.regolith.profiles[profile].filters.push({ filter: "gens", when: "initial" });
+        }
+        if (utils.gens) {
+            config.regolith.filterDefinitions.gens = {
+                runWith: "nodejs",
+                script: "filters/gens/index.js",
+            };
+            config.regolith.profiles.default.filters.push({
+                filter: "gens",
+                when: "initial",
+            });
+        }
         if (utils.esbuild) {
             config.regolith.profiles.build = {
                 export: {
@@ -56,6 +70,7 @@ export default async function install(params: installParams) {
                     { filter: "dynamic", when: "mode == 'watch'" },
                 ],
             };
+            addGens("build");
             config.regolith.profiles.bundle = {
                 export: {
                     build: "standard",
@@ -69,6 +84,7 @@ export default async function install(params: installParams) {
                     { filter: "dynamic", when: "mode == 'watch'" },
                 ],
             };
+            addGens("bundle");
             config.regolith.filterDefinitions.build = {
                 runWith: "nodejs",
                 script: "filters/build/build.js",
@@ -85,6 +101,7 @@ export default async function install(params: installParams) {
                 runWith: "nodejs",
                 script: "filters/build/tsconfig.js",
             };
+            addGens("build");
             config.regolith.profiles.default.filters.push({
                 filter: "build",
             });
@@ -104,26 +121,28 @@ export default async function install(params: installParams) {
     });
 
     await Wrapper.spinner("Creating Directories", async () => {
+        const author = params.author.toLowerCase().replace(/\s+/g, "_");
+        const project = params.name.toLowerCase().replace(/\s+/g, "_");
         mkdirSync(paths.exec("/.regolith/cache/venvs"), { recursive: true });
         mkdirSync(paths.exec("/.regolith/tmp"), { recursive: true });
         mkdirSync(paths.exec("/packs/BP/scripts"), { recursive: true });
         mkdirSync(paths.exec("/packs/data"), { recursive: true });
-        mkdirSync(paths.exec("/packs/RP"), { recursive: true });
+        mkdirSync(paths.exec(`/packs/RP/textures/${author}/${project}`), { recursive: true });
         mkdirSync(paths.exec("/filters/dynamic"), { recursive: true });
         if (utils["typesafe-mc"]) mkdirSync(paths.exec("/utils/"), { recursive: true });
         return true;
     });
 
     await Wrapper.spinner("Creating and Copying files", async () => {
-        copyFileSync(paths.node("/modules/dynamic.js"), paths.exec("/filters/dynamic/dynamic.js"));
-        copyFileSync(paths.node("/modules/regolith.exe"), paths.exec("/regolith.exe"));
-        copyFileSync(paths.node("/modules/.gitignoreFile"), paths.exec("/.gitignore"));
+        copyFileSync(paths.node("/modules/global/dynamic.js"), paths.exec("/filters/dynamic/dynamic.js"));
+        copyFileSync(paths.node("/modules/global/regolith.exe"), paths.exec("/regolith.exe"));
+        copyFileSync(paths.node("/modules/global/.gitignoreFile"), paths.exec("/.gitignore"));
         if (!utils["esbuild"]) cfg();
 
-        const BP = JSON.parse(readFileSync(paths.node("/modules/BP.json")).toString());
-        const RP = JSON.parse(readFileSync(paths.node("/modules/RP.json")).toString());
+        const BP = JSON.parse(readFileSync(paths.node("/modules/global/BP.json")).toString());
+        const RP = JSON.parse(readFileSync(paths.node("/modules/global/RP.json")).toString());
 
-        const packageJSON = JSON.parse(readFileSync(paths.node("/modules/package.json")).toString());
+        const packageJSON = JSON.parse(readFileSync(paths.node("/modules/global/package.json")).toString());
         packageJSON.name = params.name.toLowerCase().replace(/\s+/g, "-");
         packageJSON.author = params.author;
         packageJSON.version = "0.0.1";
@@ -158,6 +177,9 @@ export default async function install(params: installParams) {
             packageJSON.devDependencies.esbuild = "^0.25.9";
             packageJSON.devDependencies.globby = "^14.1.0";
         }
+        if (utils["gens"]) {
+            packageJSON.devDependencies.globby = "^14.1.0";
+        }
 
         for (const module of modules) {
             BP.dependencies.push({
@@ -180,8 +202,8 @@ export default async function install(params: installParams) {
     });
 
     await Wrapper.spinner("Installing node_modules", async () => {
-        writeFileSync(paths.node("/modules/install.bat"), `@echo off\ncd "${paths.exec()}"\n"${npmPATH}" i`);
-        await $(paths.node("/modules/install.bat"));
+        writeFileSync(paths.node("/modules/global/install.bat"), `@echo off\ncd "${paths.exec()}"\n"${npmPATH}" i`);
+        await $(paths.node("/modules/global/install.bat"));
         return true;
     });
 
@@ -189,7 +211,7 @@ export default async function install(params: installParams) {
         await Wrapper.spinner("Adding Typescript", async () => {
             mkdirSync(paths.exec("/packs/data/src"), { recursive: true });
             writeFileSync(paths.exec("/packs/data/src/index.ts"), 'console.log("Hello World!");');
-            copyFileSync(paths.node("/modules/tsconfig.json"), paths.exec("/packs/data/src/tsconfig.json"));
+            copyFileSync(paths.node("/modules/typescript/tsconfig.json"), paths.exec("/packs/data/src/tsconfig.json"));
             return true;
         });
     else if (utils.esbuild) {
@@ -207,20 +229,20 @@ export default async function install(params: installParams) {
             mkdirSync(paths.exec("/filters/build"), { recursive: true });
             writeFileSync(
                 paths.exec("/filters/build/build.js"),
-                readFileSync(paths.node("/modules/build.js")).toString().replaceAll("%NAMESPACE%", NAMESPACE),
+                readFileSync(paths.node("/modules/esbuild/build.js")).toString().replaceAll("%NAMESPACE%", NAMESPACE),
             );
             writeFileSync(
                 paths.exec("/filters/build/bundle.js"),
-                readFileSync(paths.node("/modules/bundle.js")).toString().replaceAll("%ENTRYPOINT%", ENTRYPOINT),
+                readFileSync(paths.node("/modules/esbuild/bundle.js")).toString().replaceAll("%ENTRYPOINT%", ENTRYPOINT),
             );
-            copyFileSync(paths.node("/modules/shared.js"), paths.exec("/filters/build/shared.js"));
+            copyFileSync(paths.node("/modules/esbuild/shared.js"), paths.exec("/filters/build/shared.js"));
 
             return true;
         });
     else if (utils.typescript) {
         mkdirSync(paths.exec("filters/build"), { recursive: true });
-        copyFileSync(paths.node("/modules/build.bat"), paths.exec("filters/build/build.bat"));
-        copyFileSync(paths.node("/modules/tsconfig.js"), paths.exec("filters/build/tsconfig.js"));
+        copyFileSync(paths.node("/modules/typescript/build.bat"), paths.exec("filters/build/build.bat"));
+        copyFileSync(paths.node("/modules/typescript/tsconfig.js"), paths.exec("filters/build/tsconfig.js"));
     }
 
     if (utils["typesafe-mc"])
@@ -229,6 +251,18 @@ export default async function install(params: installParams) {
                 await import("file:\\\\" + paths.exec("node_modules/typesafe-mc/scripts/cmd.js"))
             ).default;
             tsmc(paths.exec(""));
+            return true;
+        });
+
+    if (utils["gens"])
+        await Wrapper.spinner("Adding Texture Generator", async () => {
+            mkdirSync(paths.exec("filters/gens"), { recursive: true });
+            copyFileSync(paths.node("/modules/gens/index.js"), paths.exec("filters/gens/index.js"));
+            copyFileSync(paths.node("/modules/gens/paths.js"), paths.exec("filters/gens/paths.js"));
+            copyFileSync(paths.node("/modules/gens/item_textures.js"), paths.exec("filters/gens/item_textures.js"));
+            copyFileSync(paths.node("/modules/gens/terrain_texture.js"), paths.exec("filters/gens/terrain_texture.js"));
+            copyFileSync(paths.node("/modules/gens/texture_set.js"), paths.exec("filters/gens/texture_set.js"));
+            copyFileSync(paths.node("/modules/gens/flipbook_textures.js"), paths.exec("filters/gens/flipbook_textures.js"));
             return true;
         });
 }
