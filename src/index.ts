@@ -6,23 +6,6 @@ process.on("SIGINT", () => {
     if (Wrapper.activeSpinner) Wrapper.spinnerError();
 });
 
-await install({
-    author: "iEnis",
-    name: "My Project",
-    description: "",
-    beta: true,
-    modules: ["@minecraft/server", "@minecraft/server-ui"],
-    prealpha: false,
-    utils: [
-        "typescript",
-        "esbuild",
-        "gens",
-        "typesafe-mc"
-    ],
-});
-
-process.exit(0);
-
 if (!checkEmpty()) Wrapper.notEmpty();
 
 Wrapper.intro(`Create Regolith v${Wrapper.version}`);
