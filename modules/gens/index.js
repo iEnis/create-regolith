@@ -1,4 +1,4 @@
-import { readdirSync, existsSync, readFileSync } from "fs";
+import { readdirSync, existsSync, readFileSync, statSync } from "fs";
 import { globby } from "globby";
 import paths from "./paths.js";
 import path from "path";
@@ -13,7 +13,9 @@ const DATA = {
 const keys = Object.keys(DATA);
 
 for (const author of readdirSync(paths.regolith("RP/textures"))) {
+    if (!statSync(path.join(paths.regolith("RP/textures", author))).isDirectory()) continue;
     for (const project of readdirSync(path.join(paths.regolith("RP/textures", author)))) {
+        if (!statSync(path.join(paths.regolith("RP/textures", author, project))).isDirectory()) continue;
         for (const type of keys) {
             const textures = await globby(`**/*.png`, { cwd: paths.regolith("RP/textures", author, project, type) });
             for (const texture of textures) {
