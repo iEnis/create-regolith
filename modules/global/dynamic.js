@@ -5,6 +5,7 @@ const regolith = (...paths) => path.join(import.meta.dirname, "../../.regolith/t
 const root = (...paths) => path.join(import.meta.dirname, "../../", ...paths);
 
 const packageJSON = JSON.parse(readFileSync(root("package.json")).toString());
+const configJSON = JSON.parse(readFileSync(root("package.json")).toString());
 const BP = JSON.parse(readFileSync(root("/filters/dynamic/BP.json")).toString());
 const RP = JSON.parse(readFileSync(root("/filters/dynamic/RP.json")).toString());
 
@@ -12,7 +13,7 @@ for (const pack of [BP, RP]) {
     const isBP = !!pack.modules.find((x) => x.type === "data");
     const uuid = isBP ? RP.header.uuid : BP.header.uuid;
 
-    pack.header.name = packageJSON.name;
+    pack.header.name = `${configJSON.name} §r§7[${isBP ? "§bBP" : "§cRP"}§7]§r`;
     if (packageJSON.description) pack.header.description = packageJSON.description ?? "No description set";
     pack.header.version = packageJSON.version;
     pack.dependencies.find((x) => x.uuid === uuid).version = packageJSON.version;
