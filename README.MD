@@ -6,6 +6,7 @@ create Regolith Projects with neccessary stuff already premade
 ### How to use
 
 -   run `npm create regolith` in the directory you want to create your regolith project in
+-   you can change the pack name in the config.json and description in the package.json
 
 ### Features
 
