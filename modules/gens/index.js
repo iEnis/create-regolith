@@ -2,6 +2,7 @@ import { readdirSync, existsSync, readFileSync, statSync } from "fs";
 import { globby } from "globby";
 import paths from "./paths.js";
 import path from "path";
+const packageJSON = JSON.parse(readFileSync(paths.root("package.json")));
 
 /** @type {import("./types").Storage} */
 const DATA = {
@@ -13,9 +14,23 @@ const DATA = {
 const keys = Object.keys(DATA);
 
 for (const author of readdirSync(paths.regolith("RP/textures"))) {
+    if (!existsSync("RP/textures", packageJSON.author.toLowerCase())) {
+        console.error(
+            `Could not find author directory (package.json reference error), please verify that your textures are inside "RP/textures/${packageJSON.author.toLowerCase()}/projectName"`,
+        );
+        return process.exit();
+    }
     if (!statSync(path.join(paths.regolith("RP/textures", author))).isDirectory()) continue;
+    if (author !== packageJSON.author.toLowerCase()) continue;
     for (const project of readdirSync(path.join(paths.regolith("RP/textures", author)))) {
+        if (!existsSync("RP/textures", author, packageJSON.name.toLowerCase())) {
+            console.error(
+                `Could not find project directory (package.json reference error), please verify that your textures are inside "RP/textures/${packageJSON.author.toLowerCase()}/${packageJSON.name.toLowerCase()}"`,
+            );
+            return process.exit();
+        }
         if (!statSync(path.join(paths.regolith("RP/textures", author, project))).isDirectory()) continue;
+        if (project !== packageJSON.name.toLowerCase()) continue;
         for (const type of keys) {
             const textures = await globby(`**/*.png`, { cwd: paths.regolith("RP/textures", author, project, type) });
             for (const texture of textures) {
