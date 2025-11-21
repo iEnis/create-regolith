@@ -44,6 +44,10 @@ Here's the format of the file
 
 ## Changelogs
 
+##### 1.5.6
+
+-   Forgot to run build
+
 ##### 1.4.5
 
 -   Updated code to reject regolith versions prior to 1.5.0
