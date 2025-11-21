@@ -5,9 +5,12 @@ import paths from "./paths.js";
 import { v4 } from "uuid";
 
 const $ = (cmd: string) =>
-    new Promise((r) =>
-        exec(cmd, { cwd: paths.exec(), shell: "cmd.exe", env: { ...process.env, NODE_PATH: "" } }, () => {}).on("close", r),
-    );
+    new Promise((r) => {
+        let ret: string;
+        exec(cmd, { cwd: paths.exec(), shell: "cmd.exe", env: { ...process.env, NODE_PATH: "" } }, (e, out, se) => {
+            ret = out;
+        }).on("close", () => r(ret)).stdout;
+    });
 
 const npmPATH = process.env.PATH?.split(";")
     .find((x) => {
@@ -44,7 +47,7 @@ export default async function install(params: installParams) {
         config.name = params.name;
         config.author = params.author;
         function addGens(profile: string) {
-            config.regolith.profiles[profile].filters.push({ filter: "gens", when: "initial" });
+            config.regolith.profiles[profile].filters.push({ filter: "gens" /*, when: "initial"*/ }); //! Initial Cache is not Implemented
         }
         if (utils.gens) {
             config.regolith.filterDefinitions.gens = {
@@ -53,7 +56,7 @@ export default async function install(params: installParams) {
             };
             config.regolith.profiles.default.filters.push({
                 filter: "gens",
-                when: "initial",
+                // when: "initial", //! Initial Cache is not Implemented
             });
         }
         if (utils.esbuild) {
@@ -66,7 +69,7 @@ export default async function install(params: installParams) {
                     rpName: "project.name + ' - RP'",
                 },
                 filters: [
-                    { filter: "dynamic", arguments: ["increase"], when: "mode == 'build'" },
+                    { filter: "dynamic", arguments: ["increase"], when: "mode == 'run'" },
                     { filter: "dynamic", when: "mode == 'watch'" },
                 ],
             };
@@ -80,7 +83,7 @@ export default async function install(params: installParams) {
                     rpName: "project.name + ' - RP'",
                 },
                 filters: [
-                    { filter: "dynamic", arguments: ["increase"], when: "mode == 'build'" },
+                    { filter: "dynamic", arguments: ["increase"], when: "mode == 'run'" },
                     { filter: "dynamic", when: "mode == 'watch'" },
                 ],
             };
@@ -288,4 +291,14 @@ function getMaxVersion(versions: string[][]) {
 
 export function checkEmpty() {
     return !(readdirSync(paths.exec()).length > 0);
+}
+
+export async function minVersion() {
+    const prefix = "regolith version ";
+    const output = (await $(`regolith --version`)) as string;
+    if (typeof output !== "string" || !output.startsWith(prefix)) return false;
+    const verString = output.replace(prefix, "");
+    const version = verString.split(".").map((x) => Number(x));
+    if (version[0] <= 1 && version[1] <= 4) return false;
+    return true;
 }

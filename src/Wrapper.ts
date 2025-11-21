@@ -21,16 +21,6 @@ export default class Wrapper {
         process.exit();
     }
 
-    public static info() {
-        console.log(
-            [
-                colorSymbol("bar", "dim"),
-                `${colorSymbol("error", "yellow")}  ${color("fg", "This project requires unreleased features")}`,
-                `${colorSymbol("bar", "dim")}  ${color("dim", "https://github.com/Bedrock-OSS/regolith/pull/331")}`,
-            ].join("\n"),
-        );
-    }
-
     private static cancel(value: any) {
         if (isCancel(value) || typeof value === "symbol") return true;
         else return false;
@@ -73,19 +63,13 @@ export default class Wrapper {
         const add = (value: string) => msg.push(value);
         add("");
         add(`${colorSymbol("topBar", "dim")}`);
-        // add(`${colorSymbol("bar", "dim")}  ${color("red", "You need Regolith for this to work!")}`);
-        add(`${colorSymbol("bar", "dim")}  ${color("red", "Use the given Regolith executable for this to work!")}`);
+        add(`${colorSymbol("bar", "dim")}  ${color("red", "You need Regolith for this to work!")}`);
         add(`${colorSymbol("bar", "dim")}`);
         add(`${colorSymbol("bar", "dim")}  ${color("fg", "Commands:")}`);
-        add(`${colorSymbol("bar", "dim")}  ${color("fg", `'"./regolith.exe" run/watch' will bundle the project`)}`);
+        add(`${colorSymbol("bar", "dim")}  ${color("fg", `'regolith run/watch' will bundle the project`)}`);
         if (utils.includes("esbuild")) {
-            add(`${colorSymbol("bar", "dim")}  ${color("fg", `'"./regolith.exe" run/watch build' will build the project`)}`);
-            add(
-                `${colorSymbol("bar", "dim")}  ${color(
-                    "fg",
-                    `'"./regolith.exe" run/watch bundle' will bundle the project`,
-                )}`,
-            );
+            add(`${colorSymbol("bar", "dim")}  ${color("fg", `'regolith run/watch build' will build the project`)}`);
+            add(`${colorSymbol("bar", "dim")}  ${color("fg", `'regolith run/watch bundle' will bundle the project`)}`);
         }
         add(`${colorSymbol("bottomBar", "dim")}`);
         add("");

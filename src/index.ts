@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import Wrapper from "./Wrapper.js";
-import install, { checkEmpty } from "./cmd.js";
+import install, { checkEmpty, minVersion } from "./cmd.js";
 console.clear();
 process.on("SIGINT", () => {
     if (Wrapper.activeSpinner) Wrapper.spinnerError();
@@ -10,15 +10,9 @@ if (!checkEmpty()) Wrapper.notEmpty();
 
 Wrapper.intro(`Create Regolith v${Wrapper.version}`);
 
-Wrapper.info();
-const customRegolith = await Wrapper.confirm({
-    message: "Would you like to use my custom regolith build",
-    hint: "See the message above for further information",
-    initialValue: false,
-});
-
-if (!customRegolith) {
-    Wrapper.outro("Declined installing Custom Regolith");
+const versionCheck = await minVersion();
+if (!versionCheck) {
+    Wrapper.outro("Please make sure you have regolith installed and are on at least 1.5.0");
     process.exit();
 }
 

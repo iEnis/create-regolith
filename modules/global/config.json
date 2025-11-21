@@ -25,7 +25,7 @@
                     "rpName": "project.name + ' - RP'"
                 },
                 "filters": [
-                    { "filter": "dynamic", "arguments": ["increase"], "when": "mode == 'build'" },
+                    { "filter": "dynamic", "arguments": ["increase"], "when": "mode == 'run'" },
                     { "filter": "dynamic", "when": "mode == 'watch'" }
                 ]
             }
