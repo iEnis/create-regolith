@@ -138,7 +138,6 @@ export default async function install(params: installParams) {
 
     await Wrapper.spinner("Creating and Copying files", async () => {
         copyFileSync(paths.node("/modules/global/dynamic.js"), paths.exec("/filters/dynamic/dynamic.js"));
-        copyFileSync(paths.node("/modules/global/regolith.exe"), paths.exec("/regolith.exe"));
         copyFileSync(paths.node("/modules/global/.gitignoreFile"), paths.exec("/.gitignore"));
         if (!utils["esbuild"]) cfg();
 

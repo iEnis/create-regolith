@@ -44,7 +44,11 @@ Here's the format of the file
 
 ## Changelogs
 
-##### 1.5.6
+##### 1.5.0
+
+- Removed regolith.exe copy
+
+##### 1.4.6
 
 -   Forgot to run build
 
