@@ -5,7 +5,7 @@ create Regolith Projects with neccessary stuff already premade
 
 ### How to use
 
--   run `npm create regolith` in the directory you want to create your regolith project in
+-   run `npm create regolith@latest` in the directory you want to create your regolith project in
 -   you can change the pack name in the config.json and description in the package.json
 
 ### Features
@@ -41,3 +41,11 @@ Here's the format of the file
     "blend_frames": "boolean"
 }
 ```
+
+## Changelogs
+
+##### 1.4.5
+
+-   Updated code to reject regolith versions prior to 1.5.0
+-   Removed Dependecy for custom regolith.exe file
+-   WIP: Temporarily removed initial value from check for gens due to rebuild issues
